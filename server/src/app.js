@@ -7,10 +7,11 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const assert = require('assert');
+const fs   = require('fs');
 
 const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017';
-const dbName = 'anime';
+const userDB = 'anime';
 const client = new MongoClient(url, {useNewUrlParser: true});
 
 
@@ -19,7 +20,7 @@ app.get('/', (req, res) => {
 
 /* 	client.connect(async function(err, client) {
 		console.log("Connected correctly to server");
-		const db = client.db(dbName);
+		const db = client.db(userDB);
 	
 		let userCollection = db.collection('users');
 
@@ -50,7 +51,7 @@ app.post('/registration', (req, res) => {
 
 		client.connect(async function(err, client) {
 			console.log("Connected correctly to server");
-			const db = client.db(dbName);
+			const db = client.db(userDB);
 
 			let userCollection = db.collection('users');
 	
@@ -91,8 +92,67 @@ app.post('/registration', (req, res) => {
   }
 });
 
+var jwt = require('jsonwebtoken');
+
+
+
 app.post('/login', (req, res) => {
+	let username = req.query.username;
+	let password = req.query.password;
+
+	if(typeof username === 'string' && typeof password === 'string'){
+		
+		client.connect(async function(err, client) {
+			console.log("Connected correctly to server");
+			const db = client.db(userDB);
+
+			let userCollection = db.collection('users');
+
+			let hashByUsername = null;
+
+			try {
+				let user = (await userCollection.find({'username': username}).toArray())[0];
+				if(user !== undefined)
+					hashByUsername = user.password;
+			} catch (error) {
+				res.status(500).send({description: 'An unexpected error occured.', error: error});
+			};
+
+			if(hashByUsername === null){
+				res.status(400).send('No such username was found.');
+				return;
+			} else {
+
+				try {
+					let isValid = await bcrypt.compare(password, hashByUsername);
+					if(isValid){
+						let payload = { username };
+						let privateKEY  = fs.readFileSync('./src/key');
+						let publicKEY  = fs.readFileSync('./src/key.pub');
+						let signOptions = {
+							expiresIn: '24h',
+							algorithm:  'RS256'
+						}; 
 	
+						let token = jwt.sign(payload, privateKEY, signOptions);
+	
+						res.status(200).send({expiresIn: '24h','access-token': token});
+					} else {
+						res.status(401).send('Unauthorized.')
+					}
+				} catch (error) {
+					console.error(error)
+					res.status(500).send({description: 'Some shit was fkd up fam.', error: error});
+				}
+
+			}
+
+		});
+
+	}
+
+
+
 });
 
 app.get('/anime/getall', (req, res) => {
