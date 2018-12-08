@@ -1,23 +1,42 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
+    <PageHeader></PageHeader>
+    <Navbar></Navbar>
     <router-view/>
   </div>
 </template>
 
 <script>
+import Navbar from '@/components/Navbar'
+import PageHeader from '@/components/PageHeader'
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Navbar,
+    PageHeader
+  }
 }
 </script>
 
 <style>
+
+/*Move this to external css*/
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  background-color: #ECDEC4;
+  font-family: 'Pacifico', cursive;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  color: #434C3A;
+  margin: 0;
+  height: 100%;
+  width: 100%;
 }
 </style>
