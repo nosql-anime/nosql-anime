@@ -3,20 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(cors());
-
-mongoose.connect('mongodb://localhost:27017/anime');
-let db = mongoose.connection;
-
-db.on('error', () => {
-  console.error('connection error')
-});
-
-db.once('open', (cb) => {
-  console.log('Connection Succeeded');
-});
 
 app.get('/', (req, res) => {
   res.send('sinep');
