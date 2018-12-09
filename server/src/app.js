@@ -6,7 +6,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const assert = require('assert');
 const fs   = require('fs');
 
 const MongoClient = require('mongodb').MongoClient;
@@ -15,28 +14,8 @@ const userDB = 'anime';
 const client = new MongoClient(url, {useNewUrlParser: true});
 
 
-
-app.get('/', (req, res) => {
-
-/* 	client.connect(async function(err, client) {
-		console.log("Connected correctly to server");
-		const db = client.db(userDB);
-	
-		let userCollection = db.collection('users');
-
-		try {
-			let users = await userCollection.find().limit(1).toArray();
-			client.close();
-			res.send('sinep\n' + users[0]._id);
-		} catch (error) {	
-			client.close();
-			res.send('sinep');
-		};
-	
-	  }); */
-
+app.get('/', (req, res) => {	
 	  res.status(200).send('OK');
-
 });
 
 const bcrypt = require('bcrypt');
@@ -62,21 +41,21 @@ app.post('/registration', (req, res) => {
 				isNameTaken = (await userCollection.find({'username': username}).toArray()).length === 0;
 				isMailTaken = (await userCollection.find({'email': email}).toArray()).length === 0;
 			} catch (error) {	
-				res.status(500).send({description: 'An unexpected error occured.', error: error});
+				res.status(500).send({description: 'An unexpected error occured.', error});
 			};
 				if(isNameTaken && isMailTaken){
 					// registerable
 					try {
 						bcrypt.hash(password, saltRounds, async function(err, hash) {
-							let response = await userCollection.insertOne({'username': username, 'password': hash, 'email': email});
+							let response = await userCollection.insertOne({username, 'password': hash, email});
 							if(response.insertedCount === 1){
-								res.status(200).send('Registration succesful.');
+								res.status(201).send('Registration succesful.');
 							} else {
 								throw new Error();
 							}
 						});
 					} catch (error) {
-						res.status(500).send({description: 'An unexpected error occured.', error: error});
+						res.status(500).send({description: 'An unexpected error occured.', error});
 					}
 
 				} else if(!isNameTaken || !isMailTaken){
@@ -115,14 +94,13 @@ app.post('/login', (req, res) => {
 				if(user !== undefined)
 					hashByUsername = user.password;
 			} catch (error) {
-				res.status(500).send({description: 'An unexpected error occured.', error: error});
+				res.status(500).send({description: 'An unexpected error occured.', error});
 			};
 
 			if(hashByUsername === null){
 				res.status(400).send('No such username was found.');
 				return;
 			} else {
-
 				try {
 					let isValid = await bcrypt.compare(password, hashByUsername);
 					if(isValid){
@@ -132,11 +110,11 @@ app.post('/login', (req, res) => {
 						let signOptions = {
 							expiresIn: '24h',
 							algorithm:  'RS256'
-						}; 
+						};
 	
 						let token = jwt.sign(payload, privateKEY, signOptions);
-	
-						res.status(200).send({expiresIn: '24h','access-token': token});
+
+						res.status(200).send({expires: (new Date()).getTime() + 1000*60*60*24,'access-token': token});
 					} else {
 						res.status(401).send('Unauthorized.')
 					}
@@ -151,12 +129,25 @@ app.post('/login', (req, res) => {
 
 	}
 
-
-
 });
 
 app.get('/anime/getall', (req, res) => {
+	//JSON.stringify
 
+	client.connect(async function(err, client) {
+		console.log("Connected correctly to server");
+		const db = client.db(userDB);
+		let animeCollection = db.collection('animes');
+
+		try {
+			let animes = await animeCollection.find().toArray();
+			res.status(200).send(animes);
+		} catch (error) {
+			console.log(error)
+			res.status(500).send({description: 'An unexpected error occured.', error});
+		};
+
+	});
 });
 
 app.get('/anime/getanimebyid', (req, res) => {
