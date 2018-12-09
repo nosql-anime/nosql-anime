@@ -1,9 +1,10 @@
 <template>
-  <div class="login">
-    <h4>Log in</h4>
+  <div class="register">
+    <h4>New User Registration</h4>
+    <input class="form-input" v-model="email" type="email" placeholder="E-Mail">
     <input class="form-input" v-model="username" type="text" placeholder="Username">
     <input class="form-input" v-model="password" type="password" placeholder="Password">
-    <button class="login-button" v-on:click="login">Log in</button>
+    <button class="register-button" v-on:click="register">Register</button>
   </div>
 </template>
 
@@ -12,20 +13,21 @@ export default {
   data () {
     return {
       username: '',
+      email: '',
       password: ''
     }
   },
   methods: {
-    login () {
-      console.log('logging in...')
-      console.log(`username: ${this.username} password: ${this.password}`)
+    register () {
+      console.log('registering...')
+      console.log(`username: ${this.username} email: ${this.email} password: ${this.password}`)
     }
   }
 }
 </script>
 
 <style scoped>
-  .login {
+  .register {
     align-items: center;
     border: 4px solid #434C3A;
     border-radius: 16px;
@@ -51,7 +53,7 @@ export default {
     width: 300px;
     transition: all 0.8s ease;
   }
-  .login-button {
+  .register-button {
     background-color: #6B9D80;
     border: 2px solid #434C3A;
     border-radius: 16px;
@@ -60,7 +62,7 @@ export default {
     margin-top: 16px;
     width: 120px;
   }
-  .login-button:hover {
+  .register-button:hover {
     background-color: #E7E0D9;
     color: #434C3A;
     cursor: pointer;

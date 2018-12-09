@@ -1,17 +1,17 @@
 <template>
-  <div class="main-page">
+  <div class="search-result-page">
     <searchbar></searchbar>
-    <carousel></carousel>
+    <list></list>
   </div>
 </template>
 
 <script>
 import Searchbar from '@/components/Searchbar'
-import Carousel from '@/components/Carousel'
+import List from '@/components/List/List'
 export default {
   components: {
     Searchbar,
-    Carousel
+    List
   }
 }
 </script>

@@ -13,6 +13,7 @@ export default {
   methods: {
     register () {
       console.log('register button clicked')
+      Router.push('register')
     },
     login () {
       console.log('login button clicked')

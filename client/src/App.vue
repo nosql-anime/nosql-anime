@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <PageHeader></PageHeader>
-    <Navbar></Navbar>
+    <page-header></page-header>
+    <navbar></navbar>
     <router-view/>
   </div>
 </template>
@@ -19,6 +19,8 @@ export default {
 </script>
 
 <style>
+@import 'bootstrap/dist/css/bootstrap.css';
+@import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 /*Move this to external css*/
 html, body {

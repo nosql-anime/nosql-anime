@@ -1,7 +1,7 @@
 <template>
 <!-- <div class="wrapper"> -->
 <div class="search">
-  <input class="search-bar" type="text" v-model="searchField">
+  <input class="search-bar" type="text" v-model="searchField" placeholder="Type to search">
   <div class="search-button" v-on:click="search()">
     <i class="fas fa-search"></i>
   </div>
@@ -18,16 +18,16 @@ export default {
   },
   methods: {
     search () {
-      console.log('searching with query: ', this.searchField)
+      if (this.query !== '') {
+        console.log('searching with query: ', this.searchField)
+        this.$router.push({path: 'result', query: {q: this.searchField}})
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-  /* .wrapper {
-    position: relative;
-  } */
   .search {
     height: 48px;
     margin: 16px auto;
@@ -44,6 +44,8 @@ export default {
     height: 48px;
     outline: 0;
     padding: 8px;
+    padding-left: 24px;
+    padding-right: 48px;
     width: 400px;
     transition: all 0.8s ease;
   }
