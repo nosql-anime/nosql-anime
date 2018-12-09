@@ -44,7 +44,7 @@ const startUp = async function() {
 				// registerable
 				try {
 					bcrypt.hash(password, saltRounds, async function(err, hash) {
-						let response = await userCollection.insertOne({username, 'password': hash, email});
+						let response = await userCollection.insertOne({username, 'password': hash, email, 'animelist': []});
 						if(response.insertedCount === 1){
 							res.status(201).send('Registration successful.');
 						} else {
@@ -149,18 +149,22 @@ const startUp = async function() {
 
 	app.post('/animes/', async (req, res) => {
 		let name = req.body.name;
-		let seasons = req.body.seasons;
 		let score = req.body.score;
+		let seasons = req.body.seasons;
 		let genres = req.body.genres;
 
 		let animeCollection = db.animeCollection();
 
 		try {
-			let response = await animeCollection.deleteOne({'_id': db.toObjectID(id)});
-			if(response.deletedCount === 1){
-				res.status(204).send('Resource deleted successfully.');
+			if(name && score && seasons && genres){
+				let response = await animeCollection.insertOne({name, score, seasons, genres});
+				if(response.insertedCount === 1){
+					res.status(201).send('Resource created successfully.');
+				} else {
+					throw new Error('Insertion failed.');
+				}
 			} else {
-				throw new Error('No anime with provided id.');
+				throw new Error('Insertion failed.');			
 			}
 		} catch (error) {
 			console.log(error)
@@ -172,13 +176,42 @@ const startUp = async function() {
 		let id = req.params.id;
 
 		let animeCollection = db.animeCollection();
+		try {
+				let response = await animeCollection.deleteOne({'_id': db.toObjectID(id)});
+				if(response.deletedCount === 1){
+					res.status(200).send('Resource deleted successfully.');
+				} else {
+					throw new Error('No anime with provided id.');
+				}
+		} catch (error) {
+			res.status(500).send({description: 'An unexpected error occured.', error});
+		};
+	});
+
+	app.post('/users/anime', async (req, res) => {
+		let username = req.body.username;
+		let aid = req.body.aid;
+		let score = req.body.score;
+		let episode = req.body.episode;
+		let season = req.body.season;
+		let animeObject = {aid, score, season, episode};
+
+		let userCollection = db.userCollection();
 
 		try {
-			let response = await animeCollection.deleteOne({'_id': db.toObjectID(id)});
-			if(response.deletedCount === 1){
-				res.status(204).send('Resource deleted successfully.');
+			let fakku = await userCollection.findOne({username});
+			
+			//check if anime already is in user's list
+			if(!fakku.animelist.find((anime) => anime.aid === aid)){
+			
+				let response = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
+				if(response.modifiedCount === 1){
+					res.status(200).send('Resource updated successfully.');
+				} else {
+					throw new Error('Update failed.');
+				}
 			} else {
-				throw new Error('No anime with provided id.');
+				throw new Error('Anime already is in user\'s list.');
 			}
 		} catch (error) {
 			console.log(error)
