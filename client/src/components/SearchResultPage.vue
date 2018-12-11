@@ -1,7 +1,7 @@
 <template>
   <div class="search-result-page">
     <searchbar></searchbar>
-    <list></list>
+    <list v-bind:items="items"></list>
   </div>
 </template>
 
@@ -12,6 +12,15 @@ export default {
   components: {
     Searchbar,
     List
+  },
+  data () {
+    return {
+      items: [
+        {id: 1, title: 'asd', score: 5, genre: ['asd', 'jkl']},
+        {id: 2, title: 'asd', score: 5, genre: ['asd', 'jkl']},
+        {id: 3, title: 'asd', score: 5, genre: ['asd', 'jkl']}
+      ]
+    }
   }
 }
 </script>

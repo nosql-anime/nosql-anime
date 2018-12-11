@@ -3,7 +3,7 @@
     <div class="header row">
         <div class="col-8">Title</div>
         <div class="col-2">Score</div>
-        <div class="col-2">Genre</div>
+        <div class="col-2"></div>
     </div>
     <list-item v-for="item in items" :key="item.id" v-bind:item="item"></list-item>
 </div>
@@ -12,13 +12,10 @@
 <script>
 import ListItem from './ListItem'
 export default {
+  props: ['items'],
   data () {
     return {
-      items: [
-        {id: 1, title: 'asd', score: 5, genre: ['asd', 'jkl']},
-        {id: 2, title: 'asd', score: 5, genre: ['asd', 'jkl']},
-        {id: 3, title: 'asd', score: 5, genre: ['asd', 'jkl']}
-      ]
+
     }
   },
   components: {
@@ -29,11 +26,11 @@ export default {
 
 <style scoped>
     .header {
-        padding: 0 8px;
-        width: 100%;
+      padding: 0 8px;
+      width: 100%;
     }
     .header div {
-        text-align: start;
-        display: inline-block;
+      text-align: start;
+      display: inline-block;
     }
 </style>

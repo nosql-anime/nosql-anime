@@ -24,6 +24,7 @@ export default {
 
 /*Move this to external css*/
 html, body {
+  background-color: #ECDEC4;
   margin: 0;
   padding: 0;
   height: 100%;

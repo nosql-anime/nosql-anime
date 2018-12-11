@@ -19,6 +19,11 @@ export default {
     login () {
       console.log('logging in...')
       console.log(`username: ${this.username} password: ${this.password}`)
+      if (this.username && this.password) {
+        console.log('logging in')
+        this.$store.commit('login')
+        this.$router.go(-1)
+      }
     }
   }
 }

@@ -4,27 +4,24 @@
                 controls
                 indicators
                 background="#ababab"
-                :interval="4000"
+                :interval="3000"
                 img-width="640"
                 img-height="360"
                 v-model="slide"
                 @sliding-start="onSlideStart"
                 @sliding-end="onSlideEnd">
 
-      <b-carousel-slide caption="First slide"
-                        text="Nulla vitae elit libero, a pharetra augue mollis interdum."
-                        img-src="http://via.placeholder.com/640x360"
+      <b-carousel-slide img-src="https://www.animemaru.com/wp-content/uploads/2017/06/ranoutofphotochopideasfitemebitch.png"
                         img-width="640"
                         img-height="360"
       ></b-carousel-slide>
 
-      <b-carousel-slide img-src="http://via.placeholder.com/640x360"
+      <b-carousel-slide img-src="https://cdn1-33b9.kxcdn.com/wp-content/uploads/2015/10/One-Punch-man-640x360.jpg?x89779"
                         img-width="640"
                         img-height="360">
-        <h1>Hello world!</h1>
       </b-carousel-slide>
 
-      <b-carousel-slide img-src="http://via.placeholder.com/640x360"
+      <b-carousel-slide img-src="https://pm1.narvii.com/6788/8b5d400caa0890ac06ff75a95d2184bdf666db5dv2_hq.jpg"
                         img-width="640"
                         img-height="360">
       </b-carousel-slide>
