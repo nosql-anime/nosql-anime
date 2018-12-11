@@ -121,19 +121,56 @@ const startUp = async function() {
   app.get('/animes', async (req, res) => {
 		let animeCollection = db.animeCollection();
 		let q = req.query.q;
+		let titleSort = req.query.titleSort;
+		let scoreSort = req.query.scoreSort;
+		let pageNumber = req.query.p;
+		let pageSize = req.query.s;
+		let queryObject = {};
+		let limit = 0;
+		let skip = 0;
+		let sortObject = {};
 
 		try {
-			let animes;
-			if(q) {
-				animes = await animeCollection.find({name: {'$regex': q, '$options': 'i'}}).toArray();
-			} else {
-				animes = await animeCollection.find().toArray();
+			if(q){
+				queryObject.name = {'$regex': q, '$options': 'i'};
 			}
+
+			if(pageNumber && pageSize){
+				limit = parseInt(pageSize);
+				skip = parseInt(pageSize) * parseInt(pageNumber);
+			}
+
+			if(titleSort === 'asc'){
+				sortObject.name = 1;
+			} else if (titleSort === 'desc') {
+				sortObject.name = -1;
+			}
+
+			if(scoreSort === 'asc'){
+				sortObject.score = 1;
+			} else if (scoreSort === 'desc') {
+				sortObject.score = -1;
+			}
+
+			let animes = await animeCollection.find(queryObject).limit(limit).skip(skip).sort(sortObject).toArray();
+
 			res.status(200).send(animes);
 		} catch (error) {
 			console.log(error)
 			res.status(500).send({description: 'An unexpected error occured.', error});
 		};
+});
+
+app.get('/animes/results', async (req, res) => {
+	let animeCollection = db.animeCollection();
+
+	try {
+		let animeCount = await animeCollection.find().count();
+		res.status(200).send({animeCount});
+	} catch (error) {
+		console.log(error)
+		res.status(500).send({description: 'An unexpected error occured.', error});
+	}
 });
   
   app.get('/animes/:id', async (req, res) => {
