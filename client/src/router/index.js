@@ -1,16 +1,33 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import MainPage from '@/components/MainPage'
+import LoginPage from '@/components/LoginPage'
+import RegisterPage from '@/components/RegisterPage'
+import SearchResultPage from '@/components/SearchResultPage'
 
 Vue.use(Router)
 
 export default new Router({
-  mode: 'history',
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      name: 'main',
+      component: MainPage
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginPage
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterPage
+    },
+    {
+      path: '/result',
+      name: 'result',
+      component: SearchResultPage
     }
   ]
 })
