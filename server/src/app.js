@@ -198,7 +198,9 @@ const startUp = async function() {
 		let aid = req.body.aid;
 		let score = req.body.score;
 		let episode = req.body.episode;
-		let animeObject = {aid, score, episode};
+		let completed = req.body.completed;
+		let animeObject = {aid, score, episode, completed};
+
 
 		let userCollection = db.userCollection();
 
