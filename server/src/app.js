@@ -157,14 +157,12 @@ const startUp = async function() {
 	app.post('/animes/', async (req, res) => {
 		let name = req.body.name;
 		let score = req.body.score;
-		let seasons = req.body.seasons;
-		let genres = req.body.genres;
 
 		let animeCollection = db.animeCollection();
 
 		try {
-			if(name && score && seasons && genres){
-				let response = await animeCollection.insertOne({name, score, seasons, genres});
+			if(name && score){
+				let response = await animeCollection.insertOne({name, score});
 				if(response.insertedCount === 1){
 					res.status(201).send('Resource created successfully.');
 				} else {
@@ -200,8 +198,7 @@ const startUp = async function() {
 		let aid = req.body.aid;
 		let score = req.body.score;
 		let episode = req.body.episode;
-		let season = req.body.season;
-		let animeObject = {aid, score, season, episode};
+		let animeObject = {aid, score, episode};
 
 		let userCollection = db.userCollection();
 
