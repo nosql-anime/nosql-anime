@@ -196,11 +196,11 @@ const startUp = async function() {
 	app.post('/users/anime', async (req, res) => {
 		let username = req.body.username;
 		let aid = req.body.aid;
+		let name = req.body.name;
 		let score = req.body.score;
 		let episode = req.body.episode;
 		let completed = req.body.completed;
-		let animeObject = {aid, score, episode, completed};
-
+		let animeObject = {aid, name, score, episode, completed};
 
 		let userCollection = db.userCollection();
 
@@ -208,16 +208,22 @@ const startUp = async function() {
 			let user = await userCollection.findOne({username});
 			
 			//check if anime already is in user's list
-			if(!user.animelist.find((anime) => anime.aid === aid)){
-			
-				let response = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
+			if(user.animelist.find((anime) => anime.aid === aid)){
+				let indexOfAnime = user.animelist.findIndex((anime) => anime.aid === aid);
+				user.animelist[indexOfAnime] = animeObject;
+				let response = await userCollection.updateOne({username}, {'$set': {'animelist': user.animelist}});
 				if(response.modifiedCount === 1){
 					res.status(200).send('Resource updated successfully.');
 				} else {
 					throw new Error('Update failed.');
 				}
 			} else {
-				throw new Error('Anime already is in user\'s list.');
+				let response = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
+				if(response.modifiedCount === 1){
+					res.status(200).send('Resource updated successfully.');
+				} else {
+					throw new Error('Update failed.');
+				}
 			}
 		} catch (error) {
 			console.log(error)
@@ -226,6 +232,58 @@ const startUp = async function() {
 	});
 
 
+	app.get('/users/anime/', async (req, res) => {
+		let username = req.query.username;
+		let completed = req.query.completed;
+		let userCollection = db.userCollection();
+
+		if(completed === 'true'){
+			try {
+				let userList = await userCollection.find({username}).toArray();
+				if(userList.length !== 0){
+					let completedAnimelist = [];
+					let user = userList[0];
+					user.animelist.forEach((anime) => {
+						if(anime.completed === true){
+							completedAnimelist.push(anime);
+						}
+					});
+					res.status(200).send(completedAnimelist);
+				} else {
+					throw new Error('No user with provided username.');
+				}
+			} catch (error) {
+				console.log(error);
+				res.status(500).send({description: 'An unexpected error occured.', error});
+			}
+		} else if(completed === 'false') {
+			try {
+				let userList = await userCollection.find({username}).toArray();
+				if(userList.length !== 0){
+					let user = userList[0];
+					let completedAnimelist = [];
+					user.animelist.forEach((anime) => {
+						if(anime.completed === false)
+							completedAnimelist.push(anime);
+					});
+					res.status(200).send(completedAnimelist);
+				}
+			} catch (error) {
+				console.log(error);
+				res.status(500).send({description: 'An unexpected error occured.', error});
+			}
+		} else {
+			try {
+				let userList = await userCollection.find({username}).toArray();
+				if(userList.length !== 0){
+					res.status(200).send(userList[0].animelist);
+				}
+			} catch (error) {
+				console.log(error);
+				res.status(500).send({description: 'An unexpected error occured.', error});
+			}
+		}
+	});
 
 	app.listen(process.env.PORT || 8081);
 }
