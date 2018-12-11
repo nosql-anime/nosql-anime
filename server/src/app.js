@@ -362,50 +362,52 @@ app.get('/animes/results', async (req, res) => {
 		}
 	});
 
-	app.delete('/users/animes/:aid/:username', async (req, res) => {
-		let aid = req.params.aid;
-		let username = req.params.username;
+	app.delete('/users/animes/', async (req, res) => {
+		let aid = req.body.aid;
+		let username = req.body.username;
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();
 
 		try {
 			let user = await userCollection.findOne({username});
 			
-			let indexToRemove = user.animelist.findIndex((anime) => {
-				return anime.aid === aid;
-			});
-			let previousScore = user.animelist[indexToRemove].score;
+			if(user.animelist.length !== 0){
+				let indexToRemove = user.animelist.findIndex((anime) => {
+					return anime.aid === aid;
+				});
+				let previousScore = user.animelist[indexToRemove].score;
 
-			user.animelist.splice(indexToRemove, 1);
+				user.animelist.splice(indexToRemove, 1);
 
-			let deletion = await userCollection.updateOne({username}, {'$set': {animelist: user.animelist}});
+				let deletion = await userCollection.updateOne({username}, {'$set': {animelist: user.animelist}});
 
-			if(deletion.modifiedCount === 1){
-				let animeToUpdate = await animeCollection.findOne({_id: db.toObjectID(aid)});
-				if(animeToUpdate){
-					animeToUpdate.votes--;
-					animeToUpdate.sum -= previousScore;
-					animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
+				if(deletion.modifiedCount === 1){
+					let animeToUpdate = await animeCollection.findOne({_id: db.toObjectID(aid)});
+					if(animeToUpdate){
+						animeToUpdate.votes--;
+						animeToUpdate.sum -= previousScore;
+						animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
 
-					// fix division by 0
-					if(isNaN(animeToUpdate.score))
-						animeToUpdate.score = 0;
+						// fix division by 0
+						if(isNaN(animeToUpdate.score))
+							animeToUpdate.score = 0;
 
-					let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
+						let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
 
-					if(replacement.modifiedCount === 1){
-						res.status(200).send('Resource updated successfully.');
+						if(replacement.modifiedCount === 1){
+							res.status(200).send('Resource updated successfully.');
+						} else {
+							throw new Error('Update of anime database failed.');
+						}
+
 					} else {
-						throw new Error('Update of anime database failed.');
+						throw new Error('Query unsuccessful.');
 					}
 
 				} else {
-					throw new Error('Query unsuccessful.');
+					throw new Error('Deletion unsuccessful.');
 				}
-
-			} else {
-				throw new Error('Deletion unsuccessful.');
-			}
+		}
 
 		} catch (error) {
 			console.log(error);
