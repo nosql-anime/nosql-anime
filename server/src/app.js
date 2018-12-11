@@ -396,7 +396,7 @@ app.get('/animes/results', async (req, res) => {
 					if(replacement.modifiedCount === 1){
 						res.status(200).send('Resource updated successfully.');
 					} else {
-						throw new Error('Update of anime database failed.')
+						throw new Error('Update of anime database failed.');
 					}
 
 				} else {
