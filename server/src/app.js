@@ -22,9 +22,9 @@ const startUp = async function() {
   const saltRounds = 10;
   
   app.post('/registration', async (req, res) => {
-	  let username = req.query.username;
-	  let email = req.query.email;
-	  let password = req.query.password;
+	  let username = req.body.username;
+	  let email = req.body.email;
+	  let password = req.body.password;
   
 	  if(typeof username === 'string' && typeof email === 'string' && typeof password === 'string'){
   
@@ -70,9 +70,10 @@ const startUp = async function() {
   var jwt = require('jsonwebtoken');
   
   app.post('/login', async (req, res) => {
-	  let username = req.query.username;
-	  let password = req.query.password;
+	  let username = req.body.username;
+	  let password = req.body.password;
   
+
 	  if(typeof username === 'string' && typeof password === 'string'){
 
 		let userCollection = db.userCollection();
@@ -119,9 +120,15 @@ const startUp = async function() {
   
   app.get('/animes', async (req, res) => {
 		let animeCollection = db.animeCollection();
+		let q = req.query.q;
 
 		try {
-			let animes = await animeCollection.find().toArray();
+			let animes;
+			if(q) {
+				animes = await animeCollection.find({name: {'$regex': q, '$options': 'i'}}).toArray();
+			} else {
+				animes = await animeCollection.find().toArray();
+			}
 			res.status(200).send(animes);
 		} catch (error) {
 			console.log(error)
@@ -199,10 +206,10 @@ const startUp = async function() {
 		let userCollection = db.userCollection();
 
 		try {
-			let fakku = await userCollection.findOne({username});
+			let user = await userCollection.findOne({username});
 			
 			//check if anime already is in user's list
-			if(!fakku.animelist.find((anime) => anime.aid === aid)){
+			if(!user.animelist.find((anime) => anime.aid === aid)){
 			
 				let response = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
 				if(response.modifiedCount === 1){
