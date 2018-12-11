@@ -230,7 +230,7 @@ app.get('/animes/results', async (req, res) => {
 		};
 	});
 
-	app.post('/users/anime', async (req, res) => {
+	app.post('/users/animes', async (req, res) => {
 		let username = req.body.username;
 		let aid = req.body.aid;
 		let name = req.body.name;
@@ -240,6 +240,7 @@ app.get('/animes/results', async (req, res) => {
 		let animeObject = {aid, name, score, episode, completed};
 
 		let userCollection = db.userCollection();
+		let animeCollection = db.animeCollection();
 
 		try {
 			let user = await userCollection.findOne({username});
@@ -247,19 +248,58 @@ app.get('/animes/results', async (req, res) => {
 			//check if anime already is in user's list
 			if(user.animelist.find((anime) => anime.aid === aid)){
 				let indexOfAnime = user.animelist.findIndex((anime) => anime.aid === aid);
+				// get anime from list
+				let previousScore = user.animelist[indexOfAnime].score;
+				
 				user.animelist[indexOfAnime] = animeObject;
+
 				let response = await userCollection.updateOne({username}, {'$set': {'animelist': user.animelist}});
 				if(response.modifiedCount === 1){
-					res.status(200).send('Resource updated successfully.');
+					let foundAnimeList = await animeCollection.find({_id: db.toObjectID(aid)}).toArray();
+					
+					if(foundAnimeList.length === 1){
+						let animeToUpdate = foundAnimeList[0];
+						// calculate new score for anime
+						animeToUpdate.sum -= previousScore;
+						animeToUpdate.sum += animeObject.score;
+						animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
+
+						let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
+						if(replacement.modifiedCount === 1){
+							res.status(200).send('Resource updated successfully.');
+						} else {
+							throw new Error('Update of anime database failed.')
+						}
+					} else {
+						throw new Error('Query failed.');						
+					}
 				} else {
-					throw new Error('Update failed.');
+					throw new Error('Update of user\'s list failed.');
 				}
 			} else {
-				let response = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
-				if(response.modifiedCount === 1){
-					res.status(200).send('Resource updated successfully.');
+				let updateResponse = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
+				if(updateResponse.modifiedCount === 1){
+					let foundAnimeList = await animeCollection.find({_id: db.toObjectID(aid)}).toArray();
+					
+					if(foundAnimeList.length === 1){
+						let animeToUpdate = foundAnimeList[0];
+						// calculate new score for anime
+						animeToUpdate.sum += animeObject.score;
+						animeToUpdate.votes++;
+						animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
+
+						let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
+						if(replacement.modifiedCount === 1){
+							res.status(200).send('Resource created successfully.');
+						} else {
+							throw new Error('Update of anime database failed.')
+						}
+
+					} else {
+						throw new Error('Query failed.');						
+					}
 				} else {
-					throw new Error('Update failed.');
+					throw new Error('Update of user\'s list failed.');
 				}
 			}
 		} catch (error) {
@@ -269,7 +309,7 @@ app.get('/animes/results', async (req, res) => {
 	});
 
 
-	app.get('/users/anime/', async (req, res) => {
+	app.get('/users/animes/', async (req, res) => {
 		let username = req.query.username;
 		let completed = req.query.completed;
 		let userCollection = db.userCollection();
@@ -320,6 +360,61 @@ app.get('/animes/results', async (req, res) => {
 				res.status(500).send({description: 'An unexpected error occured.', error});
 			}
 		}
+	});
+
+	app.delete('/users/animes/', async (req, res) => {
+		let aid = req.body.aid;
+		let username = req.body.username;
+		let userCollection = db.userCollection();
+		let animeCollection = db.animeCollection();
+
+		try {
+			let user = await userCollection.findOne({username});
+			
+			if(user.animelist.length !== 0){
+				let indexToRemove = user.animelist.findIndex((anime) => {
+					return anime.aid === aid;
+				});
+				let previousScore = user.animelist[indexToRemove].score;
+
+				user.animelist.splice(indexToRemove, 1);
+
+				let deletion = await userCollection.updateOne({username}, {'$set': {animelist: user.animelist}});
+
+				if(deletion.modifiedCount === 1){
+					let animeToUpdate = await animeCollection.findOne({_id: db.toObjectID(aid)});
+					if(animeToUpdate){
+						animeToUpdate.votes--;
+						animeToUpdate.sum -= previousScore;
+						animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
+
+						// fix division by 0
+						if(isNaN(animeToUpdate.score))
+							animeToUpdate.score = 0;
+
+						let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
+
+						if(replacement.modifiedCount === 1){
+							res.status(200).send('Resource updated successfully.');
+						} else {
+							throw new Error('Update of anime database failed.');
+						}
+
+					} else {
+						throw new Error('Query unsuccessful.');
+					}
+
+				} else {
+					throw new Error('Deletion unsuccessful.');
+				}
+		}
+
+		} catch (error) {
+			console.log(error);
+			res.status(500).send({description: 'An unexpected error occured.', error})
+		}
+
+
 	});
 
 	app.listen(process.env.PORT || 8081);
