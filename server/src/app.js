@@ -243,9 +243,10 @@ app.get('/animes/results', async (req, res) => {
 		let aid = req.body.aid;
 		let name = req.body.name;
 		let score = req.body.score;
-		let episode = req.body.episode;
+		let currentEpisode = req.body.currentEpisode;
+		let episodes = req.body.episodes;
 		let completed = req.body.completed;
-		let animeObject = {aid, name, score, episode, completed};
+		let animeObject = {aid, name, score, currentEpisode, episodes, completed};
 		
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();
