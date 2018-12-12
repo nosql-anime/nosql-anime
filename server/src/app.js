@@ -95,7 +95,6 @@ const startUp = async function() {
 				if(isValid){
 					let payload = { username };
 					let privateKEY  = fs.readFileSync('./src/key');
-					let publicKEY  = fs.readFileSync('./src/key.pub');
 					let signOptions = {
 						expiresIn: '24h',
 						algorithm:  'RS256'
@@ -128,7 +127,7 @@ const startUp = async function() {
 		let queryObject = {};
 		let limit = 0;
 		let skip = 0;
-		let sortObject = {};
+		let sortObject = {name: 1};
 
 		try {
 			if(q){
@@ -146,15 +145,13 @@ const startUp = async function() {
 				sortObject.name = -1;
 			}
 
-			if(scoreSort === 'asc'){
-				sortObject.score = 1;
-			} else if (scoreSort === 'desc') {
+			if (scoreSort === 'desc'){
 				sortObject.score = -1;
 			}
 
 			let animes = await animeCollection.find(queryObject).limit(limit).skip(skip).sort(sortObject).toArray();
 
-			res.status(200).send(animes);
+			res.status(200).send({animeCount: animes.length, animes});
 		} catch (error) {
 			console.log(error)
 			res.status(500).send({description: 'An unexpected error occured.', error});
@@ -163,9 +160,14 @@ const startUp = async function() {
 
 app.get('/animes/results', async (req, res) => {
 	let animeCollection = db.animeCollection();
+	let q = req.query.q;
+	let queryObject = {};
 
 	try {
-		let animeCount = await animeCollection.find().count();
+		if(q){
+			queryObject.name = {'$regex': q, '$options': 'i'};
+		}
+		let animeCount = await animeCollection.find(queryObject).count();
 		res.status(200).send({animeCount});
 	} catch (error) {
 		console.log(error)
@@ -310,10 +312,22 @@ app.get('/animes/results', async (req, res) => {
 
 
 	app.get('/users/animes/', async (req, res) => {
+		let token = req.headers.authorization;
+		let publicKEY  = fs.readFileSync('./src/key.pub');
+
 		let username = req.query.username;
 		let completed = req.query.completed;
 		let userCollection = db.userCollection();
 
+//		console.log(publicKEY.toString())
+
+		
+/* 		let username2 = jwt.verify(token, publicKEY, (error, decoded) => {
+			console.error(error)
+			console.log(decoded)
+		});
+ */		// console.log(username2);
+		
 		if(completed === 'true'){
 			try {
 				let userList = await userCollection.find({username}).toArray();
