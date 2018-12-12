@@ -4615,6 +4615,6 @@ let removeData = function(array) {
 
 let dataToWrite = JSON.stringify(removeData(jsonData.anime), null, 4);
 
-const fs   = require('fs');
+const fs = require('fs');
 
 fs.writeFile('poganime.json', dataToWrite, (err) => {return});
