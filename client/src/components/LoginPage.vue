@@ -4,25 +4,40 @@
     <input class="form-input" v-model="username" type="text" placeholder="Username">
     <input class="form-input" v-model="password" type="password" placeholder="Password">
     <button class="login-button" v-on:click="login">Log in</button>
+    <div v-if="showError" class="error">
+      Your username or password is invalid
+    </div>
   </div>
 </template>
 
 <script>
+import Axios from 'axios'
 export default {
   data () {
     return {
       username: '',
-      password: ''
+      password: '',
+      showError: false
     }
   },
   methods: {
-    login () {
-      console.log('logging in...')
-      console.log(`username: ${this.username} password: ${this.password}`)
+    async login () {
       if (this.username && this.password) {
-        console.log('logging in')
-        this.$store.commit('login')
-        this.$router.go(-1)
+        try {
+          const response = await Axios.post('http://localhost:8081/login', {
+            username: this.username,
+            password: this.password
+          })
+          const accessToken = response.data['access-token']
+          const expires = new Date(response.data.expires)
+          this.$cookies.set('access-token', accessToken, expires)
+          this.$store.commit('setAccessToken', accessToken)
+          this.$store.commit('login')
+          this.$router.push('/')
+        } catch (error) {
+          console.error(error)
+          this.showError = true
+        }
       }
     }
   }

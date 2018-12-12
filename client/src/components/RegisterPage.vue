@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import Axios from 'axios'
 export default {
   data () {
     return {
@@ -18,9 +19,22 @@ export default {
     }
   },
   methods: {
-    register () {
-      console.log('registering...')
-      console.log(`username: ${this.username} email: ${this.email} password: ${this.password}`)
+    async register () {
+      if (this.username && this.email && this.password) {
+        console.log('registering...')
+        console.log(`username: ${this.username} email: ${this.email} password: ${this.password}`)
+        const response = await Axios.post('http://localhost:8081/registration', {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          username: this.username,
+          password: this.password,
+          email: this.email
+        })
+        console.log(response)
+        /* const response = await Axios.get('http://localhost:8081/animes')
+        console.log(response.data) */
+      }
     }
   }
 }

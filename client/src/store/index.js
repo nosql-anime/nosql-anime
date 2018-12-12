@@ -4,7 +4,8 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    loggedIn: false
+    loggedIn: false,
+    accessToken: ''
   },
   mutations: {
     login (state) {
@@ -12,11 +13,20 @@ const store = new Vuex.Store({
     },
     logout (state) {
       state.loggedIn = false
+    },
+    setAccessToken (state, accessToken) {
+      state.accessToken = accessToken
+    },
+    removeAccessToken (state) {
+      state.accessToken = ''
     }
   },
   getters: {
     loggedIn: state => {
       return state.loggedIn
+    },
+    accessToken: state => {
+      return state.accessToken
     }
   }
 })
