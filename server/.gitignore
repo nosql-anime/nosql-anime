@@ -1,3 +1,4 @@
 node_modules/
-src/key
-src/key.pub
+src/key.pem
+src/server.crt
+src/csr.pem

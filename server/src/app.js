@@ -20,6 +20,12 @@ const startUp = async function() {
   
   const bcrypt = require('bcrypt');
   const saltRounds = 10;
+
+  let MyError = function(message) {
+	this.message = message || 'Default Message';
+  };
+  MyError.prototype = Object.create(Error.prototype);
+  MyError.prototype.constructor = MyError;
   
   app.post('/registration', async (req, res) => {
 	  let username = req.body.username;
@@ -48,7 +54,7 @@ const startUp = async function() {
 						if(response.insertedCount === 1){
 							res.status(201).send('Registration successful.');
 						} else {
-							throw new Error();
+							throw new MyError();
 						}
 					});
 				} catch (error) {
@@ -94,14 +100,13 @@ const startUp = async function() {
 				let isValid = await bcrypt.compare(password, hashByUsername);
 				if(isValid){
 					let payload = { username };
-					let privateKEY  = fs.readFileSync('./src/key');
+					let privateKEY  = fs.readFileSync('./src/key.pem', 'utf-8');
 					let signOptions = {
 						expiresIn: '24h',
 						algorithm:  'RS256'
 					};
 
 					let token = jwt.sign(payload, privateKEY, signOptions);
-
 					res.status(200).send({expires: (new Date()).getTime() + 1000*60*60*24,'access-token': token});
 				} else {
 					res.status(401).send('Unauthorized.')
@@ -185,7 +190,7 @@ app.get('/animes/results', async (req, res) => {
 			if(anime.length === 1){
 				res.status(200).send(anime[0]);
 			} else {
-				throw new Error('No anime with provided id.');
+				throw new MyError('No anime with provided id.');
 			}
 		} catch (error) {
 			console.log(error)
@@ -205,10 +210,10 @@ app.get('/animes/results', async (req, res) => {
 				if(response.insertedCount === 1){
 					res.status(201).send('Resource created successfully.');
 				} else {
-					throw new Error('Insertion failed.');
+					throw new MyError('Insertion failed.');
 				}
 			} else {
-				throw new Error('Insertion failed.');			
+				throw new MyError('Insertion failed.');			
 			}
 		} catch (error) {
 			console.log(error)
@@ -225,7 +230,7 @@ app.get('/animes/results', async (req, res) => {
 				if(response.deletedCount === 1){
 					res.status(200).send('Resource deleted successfully.');
 				} else {
-					throw new Error('No anime with provided id.');
+					throw new MyError('No anime with provided id.');
 				}
 		} catch (error) {
 			res.status(500).send({description: 'An unexpected error occured.', error});
@@ -233,19 +238,23 @@ app.get('/animes/results', async (req, res) => {
 	});
 
 	app.post('/users/animes', async (req, res) => {
-		let username = req.body.username;
+		let token = req.headers.authorization;
+		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
 		let aid = req.body.aid;
 		let name = req.body.name;
 		let score = req.body.score;
 		let episode = req.body.episode;
 		let completed = req.body.completed;
 		let animeObject = {aid, name, score, episode, completed};
-
+		
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();
-
+		
 		try {
+			let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 			let user = await userCollection.findOne({username});
+
+			console.log(user)
 			
 			//check if anime already is in user's list
 			if(user.animelist.find((anime) => anime.aid === aid)){
@@ -270,13 +279,13 @@ app.get('/animes/results', async (req, res) => {
 						if(replacement.modifiedCount === 1){
 							res.status(200).send('Resource updated successfully.');
 						} else {
-							throw new Error('Update of anime database failed.')
+							throw new MyError('Update of anime database failed.')
 						}
 					} else {
-						throw new Error('Query failed.');						
+						throw new MyError('Query failed.');						
 					}
 				} else {
-					throw new Error('Update of user\'s list failed.');
+					throw new MyError('Update of user\'s list failed.');
 				}
 			} else {
 				let updateResponse = await userCollection.updateOne({username}, {'$push': {'animelist': animeObject}});
@@ -294,14 +303,14 @@ app.get('/animes/results', async (req, res) => {
 						if(replacement.modifiedCount === 1){
 							res.status(200).send('Resource created successfully.');
 						} else {
-							throw new Error('Update of anime database failed.')
+							throw new MyError('Update of anime database failed.')
 						}
 
 					} else {
-						throw new Error('Query failed.');						
+						throw new MyError('Query failed.');						
 					}
 				} else {
-					throw new Error('Update of user\'s list failed.');
+					throw new MyError('Update of user\'s list failed.');
 				}
 			}
 		} catch (error) {
@@ -312,24 +321,15 @@ app.get('/animes/results', async (req, res) => {
 
 
 	app.get('/users/animes/', async (req, res) => {
-		let token = req.headers.authorization;
-		let publicKEY  = fs.readFileSync('./src/key.pub');
-
-		let username = req.query.username;
 		let completed = req.query.completed;
 		let userCollection = db.userCollection();
-
-//		console.log(publicKEY.toString())
-
+		let token = req.headers.authorization;
+		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
 		
-/* 		let username2 = jwt.verify(token, publicKEY, (error, decoded) => {
-			console.error(error)
-			console.log(decoded)
-		});
- */		// console.log(username2);
 		
 		if(completed === 'true'){
 			try {
+				let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 				let userList = await userCollection.find({username}).toArray();
 				if(userList.length !== 0){
 					let completedAnimelist = [];
@@ -341,7 +341,7 @@ app.get('/animes/results', async (req, res) => {
 					});
 					res.status(200).send(completedAnimelist);
 				} else {
-					throw new Error('No user with provided username.');
+					throw new MyError('No user with provided username.');
 				}
 			} catch (error) {
 				console.log(error);
@@ -378,11 +378,13 @@ app.get('/animes/results', async (req, res) => {
 
 	app.delete('/users/animes/', async (req, res) => {
 		let aid = req.body.aid;
-		let username = req.body.username;
+		let token = req.headers.authorization;
+		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();
-
+		
 		try {
+			let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 			let user = await userCollection.findOne({username});
 			
 			if(user.animelist.length !== 0){
@@ -411,15 +413,15 @@ app.get('/animes/results', async (req, res) => {
 						if(replacement.modifiedCount === 1){
 							res.status(200).send('Resource updated successfully.');
 						} else {
-							throw new Error('Update of anime database failed.');
+							throw new MyError('Update of anime database failed.');
 						}
 
 					} else {
-						throw new Error('Query unsuccessful.');
+						throw new MyError('Query unsuccessful.');
 					}
 
 				} else {
-					throw new Error('Deletion unsuccessful.');
+					throw new MyError('Deletion unsuccessful.');
 				}
 		}
 
