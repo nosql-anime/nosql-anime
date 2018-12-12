@@ -38,6 +38,8 @@ export default {
     },
     logout () {
       console.log('logout')
+      this.$cookies.remove('access-token')
+      this.$store.commit('removeAccessToken')
       this.$store.commit('logout')
     }
   }
