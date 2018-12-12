@@ -1,7 +1,7 @@
 <template>
   <div class="title-block">
     <div class="main-title" v-on:click="goToMain">
-      noSQL Anime
+      yourAnimeList
     </div>
     <div class="logo">
       <img src="../assets/thumbnail.png" alt="chibi" width="100" height="100">

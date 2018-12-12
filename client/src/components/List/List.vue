@@ -27,7 +27,11 @@ export default {
 
 <style scoped>
     .header {
-      padding: 0 8px;
+      height: 24px;
+      margin: 8px;
+      margin-bottom: 32px;
+      font-size: 24px;
+      padding: 8px;
       width: 100%;
     }
     .header div {

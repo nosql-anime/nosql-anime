@@ -2,7 +2,7 @@
   <div class="search-result-page">
     <searchbar v-on:search="doSearch($event)"></searchbar>
     <div class="select">
-      <label for="page-size-select">Result per page</label>
+      <label for="page-size-select">Results per page</label>
       <select id="page-size-select" v-on:change="pageSizeChange()" v-model="pageSize">
         <option>5</option>
         <option>10</option>

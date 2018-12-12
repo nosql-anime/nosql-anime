@@ -45,7 +45,9 @@ export default {
 
 <style scoped>
   .list-item {
-    padding: 0 8px;
+    height: 32px;
+    margin: 8px;
+    padding: 8px 8px;
     text-align: start;
     width: 100%;
   }

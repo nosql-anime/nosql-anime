@@ -30,7 +30,7 @@ export default {
     async register () {
       if (this.validateUserNameAndPassword() && this.validateEmail()) {
         try {
-          const response = await Axios.post('/registration', {
+          await Axios.post('/registration', {
             headers: {
               'Content-Type': 'application/json'
             },
@@ -38,7 +38,6 @@ export default {
             password: this.password,
             email: this.email
           })
-          console.log(response)
           this.$router.go(-1)
         } catch (error) {
           console.error(error)
