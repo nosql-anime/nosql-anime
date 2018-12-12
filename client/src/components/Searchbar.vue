@@ -20,7 +20,6 @@ export default {
   methods: {
     search () {
       if (this.query !== '') {
-        console.log('searching with query: ', this.searchField)
         this.$emit('search', this.searchField)
       }
     }

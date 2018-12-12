@@ -23,11 +23,9 @@ export default {
   },
   methods: {
     register () {
-      console.log('register button clicked')
       this.$router.push('register')
     },
     login () {
-      console.log('login button clicked')
       this.$router.push('login')
     },
     home () {
@@ -37,7 +35,6 @@ export default {
       this.$router.push('/mylist')
     },
     logout () {
-      console.log('logout')
       this.$cookies.remove('access-token')
       this.$store.commit('removeAccessToken')
       this.$store.commit('logout')

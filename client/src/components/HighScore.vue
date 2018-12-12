@@ -9,7 +9,7 @@
       </div>
       <div class="hs-item row" v-for="(item, index) in items" :key=item.id>
         <div class="col-2 rank">{{ index + 1 }}</div>
-        <div class="col-8 title">{{ item.title }}</div>
+        <div class="col-8 title">{{ item.name }}</div>
         <div class="col-2 score">{{ item.score }}</div>
       </div>
     </div>
@@ -17,17 +17,15 @@
 </template>
 
 <script>
+import Axios from 'axios'
 export default {
   data () {
     return {
-      items: [
-        {id: 1, title: 'asd', score: 9, genre: ['asd', 'jkl']},
-        {id: 2, title: 'asd', score: 8.5, genre: ['asd', 'jkl']},
-        {id: 3, title: 'asd', score: 8, genre: ['asd', 'jkl']},
-        {id: 4, title: 'asd', score: 8, genre: ['asd', 'jkl']},
-        {id: 5, title: 'asd', score: 8, genre: ['asd', 'jkl']}
-      ]
+      items: []
     }
+  },
+  async mounted () {
+    this.items = (await Axios.get('/animes?scoreSort=desc&s=5&p=0')).data.animes
   }
 }
 </script>
