@@ -5,14 +5,19 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     loggedIn: false,
-    accessToken: ''
+    accessToken: '',
+    userName: ''
   },
   mutations: {
-    login (state) {
+    login (state, {accessToken, userName}) {
       state.loggedIn = true
+      state.accessToken = accessToken
+      state.userName = userName
     },
     logout (state) {
       state.loggedIn = false
+      state.accessToken = ''
+      state.userName = ''
     },
     setAccessToken (state, accessToken) {
       state.accessToken = accessToken

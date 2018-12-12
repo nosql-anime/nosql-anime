@@ -11,6 +11,7 @@
 
 <script>
 export default {
+  props: ['searchCallback'],
   data () {
     return {
       searchField: ''
@@ -20,7 +21,7 @@ export default {
     search () {
       if (this.query !== '') {
         console.log('searching with query: ', this.searchField)
-        this.$router.push({path: 'result', query: {q: this.searchField}})
+        this.$emit('search', this.searchField)
       }
     }
   }

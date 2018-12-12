@@ -1,10 +1,16 @@
 <template>
   <div class="register">
     <h4>New User Registration</h4>
-    <input class="form-input" v-model="email" type="email" placeholder="E-Mail">
-    <input class="form-input" v-model="username" type="text" placeholder="Username">
-    <input class="form-input" v-model="password" type="password" placeholder="Password">
+    <input class="form-input" v-model="email" type="email" placeholder="E-Mail" required>
+    <input class="form-input" v-model="username" type="text" placeholder="Username" required>
+    <input class="form-input" v-model="password" type="password" placeholder="Password" required>
     <button class="register-button" v-on:click="register">Register</button>
+    <div v-if="showError" class="error">
+      Username or email already in use
+    </div>
+    <div v-if="showEmailError" class="error">
+      Invalid email
+    </div>
   </div>
 </template>
 
@@ -15,26 +21,38 @@ export default {
     return {
       username: '',
       email: '',
-      password: ''
+      password: '',
+      showError: false,
+      showEmailError: false
     }
   },
   methods: {
     async register () {
-      if (this.username && this.email && this.password) {
-        console.log('registering...')
-        console.log(`username: ${this.username} email: ${this.email} password: ${this.password}`)
-        const response = await Axios.post('http://localhost:8081/registration', {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          username: this.username,
-          password: this.password,
-          email: this.email
-        })
-        console.log(response)
-        /* const response = await Axios.get('http://localhost:8081/animes')
-        console.log(response.data) */
+      if (this.validateUserNameAndPassword() && this.validateEmail()) {
+        try {
+          const response = await Axios.post('/registration', {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            username: this.username,
+            password: this.password,
+            email: this.email
+          })
+          console.log(response)
+          this.$router.go(-1)
+        } catch (error) {
+          console.error(error)
+          this.showError = true
+        }
+      } else {
+        this.showEmailError = true
       }
+    },
+    validateUserNameAndPassword () {
+      return (this.username && this.password)
+    },
+    validateEmail () {
+      return this.email && /^.*@.*\..*$/.test(this.email)
     }
   }
 }

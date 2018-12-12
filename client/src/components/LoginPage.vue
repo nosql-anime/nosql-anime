@@ -24,16 +24,16 @@ export default {
     async login () {
       if (this.username && this.password) {
         try {
-          const response = await Axios.post('http://localhost:8081/login', {
+          const response = await Axios.post('/login', {
             username: this.username,
             password: this.password
           })
           const accessToken = response.data['access-token']
           const expires = new Date(response.data.expires)
           this.$cookies.set('access-token', accessToken, expires)
-          this.$store.commit('setAccessToken', accessToken)
-          this.$store.commit('login')
-          this.$router.push('/')
+          // this.$store.commit('setAccessToken', accessToken)
+          this.$store.commit('login', {accessToken, userName: this.username})
+          this.$router.go(-1)
         } catch (error) {
           console.error(error)
           this.showError = true

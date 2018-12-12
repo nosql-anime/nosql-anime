@@ -6,10 +6,13 @@ import router from './router'
 import store from './store'
 import VueCookies from 'vue-cookies'
 import BootstrapVue from 'bootstrap-vue'
+import Axios from 'axios'
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(VueCookies)
+
+Axios.defaults.baseURL = 'http://localhost:8081'
 
 /* eslint-disable no-new */
 new Vue({

@@ -1,6 +1,6 @@
 <template>
   <div class="main-page">
-    <searchbar></searchbar>
+    <searchbar v-on:search="doSearch($event)"></searchbar>
     <carousel></carousel>
     <high-score></high-score>
   </div>
@@ -15,6 +15,11 @@ export default {
     Searchbar,
     Carousel,
     HighScore
+  },
+  methods: {
+    doSearch (event) {
+      this.$router.push({path: 'result', query: {q: event}})
+    }
   }
 }
 </script>
