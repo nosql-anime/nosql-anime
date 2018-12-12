@@ -22,19 +22,22 @@ export default {
     }
   },
   methods: {
-    async addToList () {
-      console.log(this.$store.state.userName)
-      console.log(this.item)
-      const response = await Axios.post('/users/animes', {
-        headers: {'Content-Type': 'application/json'},
-        username: this.$store.state.userName,
-        aid: this.item._id,
-        name: this.item.name,
-        score: this.item.score,
-        episode: 1,
-        completed: false
-      })
-      console.log(response)
+    addToList () {
+      if (this.loggedIn) {
+        Axios.post('/users/animes', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: this.$store.getters.accessToken
+          },
+          token: this.$store.getters.accessToken,
+          aid: this.item._id,
+          name: this.item.name,
+          score: this.item.score,
+          episodes: this.item.episodes,
+          currentEpisode: 1,
+          completed: false
+        })
+      }
     }
   }
 }

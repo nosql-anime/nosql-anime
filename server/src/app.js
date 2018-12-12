@@ -1,12 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const DB = require('./db');
 const db = new DB();
 
 
 const app = express();
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -132,7 +134,7 @@ const startUp = async function() {
 		let queryObject = {};
 		let limit = 0;
 		let skip = 0;
-		let sortObject = {name: 1};
+		let sortObject = {};
 
 		try {
 			if(q){
@@ -153,7 +155,10 @@ const startUp = async function() {
 			if (scoreSort === 'desc'){
 				sortObject.score = -1;
 			}
-
+			
+			if (!sortObject.name && !sortObject.score) {
+				sortObject.name = 1
+			} 
 			let animes = await animeCollection.find(queryObject).limit(limit).skip(skip).sort(sortObject).toArray();
 
 			res.status(200).send({animeCount: animes.length, animes});
@@ -238,7 +243,7 @@ app.get('/animes/results', async (req, res) => {
 	});
 
 	app.post('/users/animes', async (req, res) => {
-		let token = req.headers.authorization;
+		let token = req.body.token;
 		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
 		let aid = req.body.aid;
 		let name = req.body.name;
@@ -250,13 +255,9 @@ app.get('/animes/results', async (req, res) => {
 		
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();
-		
 		try {
 			let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 			let user = await userCollection.findOne({username});
-
-			console.log(user)
-			
 			//check if anime already is in user's list
 			if(user.animelist.find((anime) => anime.aid === aid)){
 				let indexOfAnime = user.animelist.findIndex((anime) => anime.aid === aid);
@@ -266,10 +267,11 @@ app.get('/animes/results', async (req, res) => {
 				user.animelist[indexOfAnime] = animeObject;
 
 				let response = await userCollection.updateOne({username}, {'$set': {'animelist': user.animelist}});
-				if(response.modifiedCount === 1){
+				if(response.matchedCount === 1){
 					let foundAnimeList = await animeCollection.find({_id: db.toObjectID(aid)}).toArray();
+					console.log(foundAnimeList);
 					
-					if(foundAnimeList.length === 1){
+					if(foundAnimeList.length === 1) {
 						let animeToUpdate = foundAnimeList[0];
 						// calculate new score for anime
 						animeToUpdate.sum -= previousScore;
@@ -277,7 +279,7 @@ app.get('/animes/results', async (req, res) => {
 						animeToUpdate.score = animeToUpdate.sum / animeToUpdate.votes;
 
 						let replacement = await animeCollection.replaceOne({_id: animeToUpdate._id}, animeToUpdate);
-						if(replacement.modifiedCount === 1){
+						if(replacement.matchedCount === 1){
 							res.status(200).send('Resource updated successfully.');
 						} else {
 							throw new MyError('Update of anime database failed.')
@@ -321,12 +323,12 @@ app.get('/animes/results', async (req, res) => {
 	});
 
 
-	app.get('/users/animes/', async (req, res) => {
+	app.get('/users/animes/:token', async (req, res) => {
 		let completed = req.query.completed;
 		let userCollection = db.userCollection();
-		let token = req.headers.authorization;
+		// let token = req.headers.authorization;
+		let token = req.params.token
 		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
-		
 		
 		if(completed === 'true'){
 			try {
@@ -350,6 +352,7 @@ app.get('/animes/results', async (req, res) => {
 			}
 		} else if(completed === 'false') {
 			try {
+				let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 				let userList = await userCollection.find({username}).toArray();
 				if(userList.length !== 0){
 					let user = userList[0];
@@ -366,6 +369,7 @@ app.get('/animes/results', async (req, res) => {
 			}
 		} else {
 			try {
+				let username = (jwt.verify(token, publicKEY, {algorithms: ['RS256']})).username;
 				let userList = await userCollection.find({username}).toArray();
 				if(userList.length !== 0){
 					res.status(200).send(userList[0].animelist);
@@ -377,9 +381,9 @@ app.get('/animes/results', async (req, res) => {
 		}
 	});
 
-	app.delete('/users/animes/', async (req, res) => {
-		let aid = req.body.aid;
-		let token = req.headers.authorization;
+	app.delete('/users/animes/:aid/:token', async (req, res) => {
+		let aid = req.params.aid;
+		let token = req.params.token;
 		let publicKEY  = fs.readFileSync('./src/server.crt', 'utf-8').toString();
 		let userCollection = db.userCollection();
 		let animeCollection = db.animeCollection();

@@ -1,8 +1,9 @@
 <template>
   <div class="search-result-page">
     <searchbar v-on:search="doSearch($event)"></searchbar>
-    <div>
-      <select v-on:change="pageSizeChange()" v-model="pageSize">
+    <div class="select">
+      <label for="page-size-select">Result per page</label>
+      <select id="page-size-select" v-on:change="pageSizeChange()" v-model="pageSize">
         <option>5</option>
         <option>10</option>
         <option>20</option>
@@ -85,5 +86,8 @@ export default {
   .pagination-bar .page-item.active .page-link{
     background-color: #6B9D80 !important;
     color: #E7E0D9 !important;
+  }
+  .select {
+    margin: 8px 8px 8px 90%;
   }
 </style>
