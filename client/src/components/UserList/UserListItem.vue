@@ -5,7 +5,6 @@
         <div class="col-2">{{ item.score }}</div>
         <div class="col-2">
           <div class="add-btn"
-                v-on:click="addToList"
                 v-bind:class="{ disabled: !loggedIn }"
                 v-bind:title="loggedIn ? 'Add to my list' : 'You have to log in for this'">+</div>
         </div>
@@ -13,28 +12,11 @@
 </template>
 
 <script>
-import Axios from 'axios'
 export default {
   props: ['item'],
   computed: {
     loggedIn () {
       return this.$store.getters.loggedIn
-    }
-  },
-  methods: {
-    async addToList () {
-      console.log(this.$store.state.userName)
-      console.log(this.item)
-      const response = await Axios.post('/users/animes', {
-        headers: {'Content-Type': 'application/json'},
-        username: this.$store.state.userName,
-        aid: this.item._id,
-        name: this.item.name,
-        score: this.item.score,
-        episode: 1,
-        completed: false
-      })
-      console.log(response)
     }
   }
 }

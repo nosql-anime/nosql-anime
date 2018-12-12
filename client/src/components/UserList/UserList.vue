@@ -2,16 +2,16 @@
 <div>
     <div class="header row">
         <div class="col-6">Title</div>
-        <div class="col-2"># of episodes</div>
-        <div class="col-2">Score</div>
-        <div class="col-2"></div>
+        <div class="col-2">Current episode</div>
+        <div class="col-2">My score</div>
+        <div class="col-2">Completed</div>
     </div>
-    <list-item v-for="item in items" :key="item._id" v-bind:item="item"></list-item>
+    <user-list-item v-for="item in items" :key="item.aid" v-bind:item="item"></user-list-item>
 </div>
 </template>
 
 <script>
-import ListItem from './ListItem'
+import UserListItem from './UserListItem'
 export default {
   props: ['items'],
   data () {
@@ -20,7 +20,7 @@ export default {
     }
   },
   components: {
-    ListItem
+    UserListItem
   }
 }
 </script>
